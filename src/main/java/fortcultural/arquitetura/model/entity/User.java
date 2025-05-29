@@ -3,6 +3,9 @@ package fortcultural.arquitetura.model.entity;
 import fortcultural.arquitetura.model.enums.TypeUser;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 public class User {
@@ -12,16 +15,20 @@ public class User {
     @Column(name = "idUser")
     private Long id;
 
-    // Editar com os ORMS do JPA
+    @Column(name = "name", nullable = false, length = 100)
     private String name;
 
-    // Login via email, ou seja unique
+    @Column(name = "email", unique = true, nullable = false, length = 100)
     private String email ;
 
+    @Column(name = "password", nullable = false)
     private String password;
 
     @Enumerated(EnumType.STRING)
     private TypeUser type;
+
+    @OneToMany(mappedBy = "users",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CulturalActivity> activities = new ArrayList<>();
 
     public Long getId() {
         return id;
@@ -61,5 +68,13 @@ public class User {
 
     public void setType(TypeUser type) {
         this.type = type;
+    }
+
+    public List<CulturalActivity> getActivities() {
+        return activities;
+    }
+
+    public void setActivities(List<CulturalActivity> activities) {
+        this.activities = activities;
     }
 }
