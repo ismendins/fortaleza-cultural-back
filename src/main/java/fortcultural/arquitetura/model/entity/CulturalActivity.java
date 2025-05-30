@@ -20,6 +20,7 @@ public class CulturalActivity {
 
     private Double longitude;
 
+    @Column(name = "description", columnDefinition = "TEXT")
     private String category;
 
     @ManyToOne
@@ -74,11 +75,11 @@ public class CulturalActivity {
         this.category = category;
     }
 
-    public User getProducer() {
-        return producer;
+    public User getOrganizer() {
+        return organizer;
     }
 
-    public void setProducer(User producer) {
-        this.producer = producer;
+    public void setOrganizer(User organizer) {
+        this.organizer = organizer;
     }
 }
