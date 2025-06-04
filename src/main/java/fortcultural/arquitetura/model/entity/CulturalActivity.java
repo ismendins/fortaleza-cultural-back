@@ -20,7 +20,7 @@ public class CulturalActivity {
 
     private Double longitude;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "category", columnDefinition = "TEXT")
     private String category;
 
     @ManyToOne

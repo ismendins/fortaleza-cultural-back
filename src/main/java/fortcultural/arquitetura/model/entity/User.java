@@ -27,7 +27,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private TypeUser type;
 
-    @OneToMany(mappedBy = "users",cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CulturalActivity> activities = new ArrayList<>();
 
     public Long getId() {
