@@ -15,7 +15,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private UserRepository userRepository;
 
-
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -43,11 +42,21 @@ public class UserServiceImpl implements UserService {
             user.setPassword(updatedUser.getPassword());
             user.setType(updatedUser.getType());
             return userRepository.save(user);
-        }).orElseThrow(() -> new RuntimeException("User com ID " +  id + " não encontrado."));
+        }).orElseThrow(() -> new RuntimeException("User com ID " + id + " não encontrado."));
     }
 
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 }
