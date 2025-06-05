@@ -1,9 +1,9 @@
 package fortcultural.arquitetura.service.interfaces;
 
-import fortcultural.arquitetura.dto.OSMActivity;
+import fortcultural.arquitetura.dto.OSMActivityDTO;
 
 import java.util.List;
 
 public interface OSMIntegrationService {
-    public List<OSMActivity> fetchCulturalActivitiesFromOSM(String tag);
+    public List<OSMActivityDTO> fetchCulturalActivitiesFromOSM(String tag, String bbox);
 }

@@ -1,6 +1,6 @@
 package fortcultural.arquitetura.service.impl;
 
-import fortcultural.arquitetura.dto.OSMActivity;
+import fortcultural.arquitetura.dto.OSMActivityDTO;
 import fortcultural.arquitetura.service.interfaces.OSMIntegrationService;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URLEncoder;
@@ -20,23 +22,25 @@ public class OSMIntegrationServiceImpl implements OSMIntegrationService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private static final String BBOX_FORTALEZA = "-3.9383,-38.6750,-3.7184,-38.4220";
+    private static final String bbox = "-3.9383,-38.6750,-3.7184,-38.4220";
+
+    private static final Logger logger = LoggerFactory.getLogger(OSMIntegrationServiceImpl.class);
 
     @Override
-    public List<OSMActivity> fetchCulturalActivitiesFromOSM(String tag) {
+    public List<OSMActivityDTO> fetchCulturalActivitiesFromOSM(String tag, String bbox) {
         String overpassApiUrl = "https://overpass-api.de/api/interpreter";
 
         String query = String.format("""
         [out:json];
-        node["amenity"="%s"](-3.9383,-38.6750,-3.7184,-38.4220);
+        node["amenity"="%s"](%s);
         out;
-        """, tag);
+        """, tag, bbox);
 
         String encodedQuery = URLEncoder.encode(query, StandardCharsets.UTF_8);
         URI uri = URI.create(overpassApiUrl + "?data=" + encodedQuery);
 
         ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
-        List<OSMActivity> result = new ArrayList<>();
+        List<OSMActivityDTO> result = new ArrayList<>();
 
         if (response.getStatusCode().is2xxSuccessful()) {
             try {
@@ -48,7 +52,7 @@ public class OSMIntegrationServiceImpl implements OSMIntegrationService {
                     JSONObject tags = obj.optJSONObject("tags");
 
                     if (obj.has("lat") && obj.has("lon")) {
-                        OSMActivity activity = new OSMActivity();
+                        OSMActivityDTO activity = new OSMActivityDTO();
                         activity.setLatitude(obj.getDouble("lat"));
                         activity.setLongitude(obj.getDouble("lon"));
                         activity.setName(tags != null ? tags.optString("name", "Sem nome") : "Sem nome");
@@ -59,7 +63,7 @@ public class OSMIntegrationServiceImpl implements OSMIntegrationService {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Erro ao buscar dados no OSM", e);
             }
         }
         return result;

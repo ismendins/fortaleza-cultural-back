@@ -1,6 +1,5 @@
 package fortcultural.arquitetura.model.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -26,7 +25,6 @@ public class CulturalActivity {
 
     @ManyToOne
     @JoinColumn(name = "organizer_id", nullable = false)
-    @JsonIgnore
     private User organizer;
 
     public Long getId() {

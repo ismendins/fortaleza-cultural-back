@@ -1,18 +1,14 @@
 package fortcultural.arquitetura.dto;
 
-public class ErrorResponse {
+public class ErrorResponseDTO {
     private String error;
     private String message;
 
-    // Constructors
-    public ErrorResponse() {}
-
-    public ErrorResponse(String error, String message) {
+    public ErrorResponseDTO(String error, String message) {
         this.error = error;
         this.message = message;
     }
 
-    // Getters and Setters
     public String getError() {
         return error;
     }

@@ -1,20 +1,16 @@
 package fortcultural.arquitetura.dto;
 
-public class RegisterResponse {
+public class RegisterResponseDTO {
     private String message;
     private String email;
     private String name;
 
-    // Constructors
-    public RegisterResponse() {}
-
-    public RegisterResponse(String message, String email, String name) {
+    public RegisterResponseDTO(String message, String email, String name) {
         this.message = message;
         this.email = email;
         this.name = name;
     }
 
-    // Getters and Setters
     public String getMessage() {
         return message;
     }

@@ -1,5 +1,6 @@
 package fortcultural.arquitetura.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import fortcultural.arquitetura.model.enums.TypeUser;
 import jakarta.persistence.*;
 
@@ -28,6 +29,7 @@ public class User {
     private TypeUser type;
 
     @OneToMany(mappedBy = "organizer", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<CulturalActivity> activities = new ArrayList<>();
 
     public Long getId() {

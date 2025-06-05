@@ -3,7 +3,7 @@ package fortcultural.arquitetura.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
-public class LoginRequest {
+public class LoginRequestDTO {
     @NotBlank(message = "Email é obrigatório")
     @Email(message = "Email deve ter formato válido")
     private String email;
@@ -11,7 +11,7 @@ public class LoginRequest {
     @NotBlank(message = "Senha é obrigatória")
     private String password;
 
-    public LoginRequest(String email, String password) {
+    public LoginRequestDTO(String email, String password) {
         this.email = email;
         this.password = password;
     }

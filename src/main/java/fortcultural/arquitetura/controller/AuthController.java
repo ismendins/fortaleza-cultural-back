@@ -9,6 +9,7 @@ import fortcultural.arquitetura.service.interfaces.UserService;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.http.ResponseEntity;
@@ -42,29 +43,23 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticate(@Valid @RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> authenticate(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
         try {
-            // Autentica com email e senha
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginRequest.getEmail(),
-                            loginRequest.getPassword()
+                            loginRequestDTO.getEmail(),
+                            loginRequestDTO.getPassword()
                     )
             );
 
-            // Carrega detalhes do usuário para obter roles
-            UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getEmail());
+            UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequestDTO.getEmail());
 
-            // Extrai roles do usuário
             String roles = userDetails.getAuthorities().stream()
-                    .map(authority -> authority.getAuthority())
+                    .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.joining(","));
 
-            // Gera token com roles
             String token = jwtUtil.generateTokenWithRoles(authentication.getName(), roles);
-
-            // Retorna resposta estruturada
-            LoginResponse response = new LoginResponse(
+            LoginResponseDTO response = new LoginResponseDTO(
                     token,
                     authentication.getName(),
                     roles,
@@ -74,46 +69,41 @@ public class AuthController {
             return ResponseEntity.ok(response);
 
         } catch (BadCredentialsException e) {
-            ErrorResponse errorResponse = new ErrorResponse(
+            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                     "INVALID_CREDENTIALS",
                     "Email ou senha inválidos"
             );
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponseDTO);
         } catch (Exception e) {
-            // Log temporário para debug
             e.printStackTrace();
-            ErrorResponse errorResponse = new ErrorResponse(
+            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                     "AUTHENTICATION_ERROR",
                     "Erro interno no servidor: " + e.getMessage()
             );
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponseDTO);
         }
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequestDTO registerRequestDTO) {
         try {
-            // Verifica se o email já existe
-            if (userService.existsByEmail(registerRequest.getEmail())) {
-                ErrorResponse errorResponse = new ErrorResponse(
+            if (userService.existsByEmail(registerRequestDTO.getEmail())) {
+                ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                         "EMAIL_ALREADY_EXISTS",
                         "Email já está em uso"
                 );
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponseDTO);
             }
 
-            // Cria novo usuário
             User newUser = new User();
-            newUser.setName(registerRequest.getName());
-            newUser.setEmail(registerRequest.getEmail());
-            newUser.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-            newUser.setType(registerRequest.getType() != null ? TypeUser.valueOf(registerRequest.getType()) : TypeUser.USER);
+            newUser.setName(registerRequestDTO.getName());
+            newUser.setEmail(registerRequestDTO.getEmail());
+            newUser.setPassword(passwordEncoder.encode(registerRequestDTO.getPassword()));
+            newUser.setType(registerRequestDTO.getType() != null ? TypeUser.valueOf(registerRequestDTO.getType()) : TypeUser.USER);
 
-            // Salva o usuário
             User savedUser = userService.createUser(newUser);
 
-            // Retorna resposta de sucesso
-            RegisterResponse response = new RegisterResponse(
+            RegisterResponseDTO response = new RegisterResponseDTO(
                     "Usuário criado com sucesso",
                     savedUser.getEmail(),
                     savedUser.getName()
@@ -122,17 +112,17 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
         } catch (DataIntegrityViolationException e) {
-            ErrorResponse errorResponse = new ErrorResponse(
+            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                     "EMAIL_ALREADY_EXISTS",
                     "Email já está em uso"
             );
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponseDTO);
         } catch (Exception e) {
-            ErrorResponse errorResponse = new ErrorResponse(
+            ErrorResponseDTO errorResponseDTO = new ErrorResponseDTO(
                     "REGISTRATION_ERROR",
                     "Erro interno no servidor durante o registro"
             );
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponseDTO);
         }
     }
 }

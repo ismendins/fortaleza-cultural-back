@@ -38,7 +38,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if (username != null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-                    // Valida o token antes de autenticar
                     if (jwtUtil.validateToken(token, username)) {
                         Authentication authentication = new UsernamePasswordAuthenticationToken(
                                 userDetails,
@@ -51,9 +50,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            // Log do erro sem expor detalhes sensíveis
             logger.error("Erro na autenticação JWT: " + e.getMessage());
-            // Limpa o contexto de segurança em caso de erro
             SecurityContextHolder.clearContext();
         }
 
@@ -71,7 +68,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // Não filtra endpoints públicos
         String path = request.getRequestURI();
         return path.startsWith("/auth/") ||
                 path.startsWith("/actuator/health") ||

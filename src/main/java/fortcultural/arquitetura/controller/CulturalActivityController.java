@@ -1,11 +1,14 @@
 package fortcultural.arquitetura.controller;
 
-import fortcultural.arquitetura.dto.CulturalActivity;
+import fortcultural.arquitetura.dto.CulturalActivityDTO;
+import fortcultural.arquitetura.dto.OSMActivityDTO;
 import fortcultural.arquitetura.service.impl.CulturalActivityServiceImpl;
+import fortcultural.arquitetura.service.impl.OSMIntegrationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +18,9 @@ public class CulturalActivityController {
 
     @Autowired
     private CulturalActivityServiceImpl activityService;
+
+    @Autowired
+    private OSMIntegrationServiceImpl osmIntegrationService;
 
     @PostMapping
     public ResponseEntity<fortcultural.arquitetura.model.entity.CulturalActivity> createActivity(@RequestBody fortcultural.arquitetura.model.entity.CulturalActivity activity) {
@@ -38,9 +44,19 @@ public class CulturalActivityController {
         return ResponseEntity.ok(activityService.updateCulturalActivity(id, updatedActivity));
     }
 
-    @GetMapping("/filter")
-    public ResponseEntity<List<CulturalActivity>> getFilteredActivities(@RequestParam String categoryOrTag) {
-        return ResponseEntity.ok(activityService.getActivitiesFiltered(categoryOrTag));
+    @GetMapping("/search")
+    public ResponseEntity<List<CulturalActivityDTO>> searchActivities(@RequestParam String categoryOrTag) {
+        String bbox = "-3.9383,-38.6750,-3.7184,-38.4220";
+        List<CulturalActivityDTO> localActivities = activityService.getActivitiesFiltered(categoryOrTag);
+        List<OSMActivityDTO> osmActivities = osmIntegrationService.fetchCulturalActivitiesFromOSM(categoryOrTag, bbox);
+
+        List<CulturalActivityDTO> allActivities = new ArrayList<>(localActivities);
+
+        for (OSMActivityDTO osmActivity : osmActivities) {
+            allActivities.add(CulturalActivityDTO.fromOSM(osmActivity));
+        }
+
+        return ResponseEntity.ok(allActivities);
     }
 
     @DeleteMapping("/{id}")

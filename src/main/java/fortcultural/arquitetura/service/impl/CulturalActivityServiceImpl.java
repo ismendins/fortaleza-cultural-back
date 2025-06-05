@@ -1,10 +1,14 @@
 package fortcultural.arquitetura.service.impl;
 
-import fortcultural.arquitetura.dto.CulturalActivity;
-import fortcultural.arquitetura.dto.OSMActivity;
+import fortcultural.arquitetura.dto.CulturalActivityDTO;
+import fortcultural.arquitetura.dto.OSMActivityDTO;
+import fortcultural.arquitetura.model.entity.User;
 import fortcultural.arquitetura.repository.CulturalActivityRepository;
 import fortcultural.arquitetura.service.interfaces.CulturalActivityService;
+import fortcultural.arquitetura.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -20,8 +24,24 @@ public class CulturalActivityServiceImpl implements CulturalActivityService {
     @Autowired
     private CulturalActivityRepository culturalActivityRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    private static final String BBOX = "-3.9383,-38.6750,-3.7184,-38.4220";
+
     @Override
     public fortcultural.arquitetura.model.entity.CulturalActivity createCulturalActivity(fortcultural.arquitetura.model.entity.CulturalActivity culturalActivity) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+
+        Optional<User> existingUser = userRepository.findByEmail(username);
+        if (existingUser.isEmpty()) {
+            throw new RuntimeException("Usuário não encontrado.");
+        }
+
+        User organizer = existingUser.get();
+        culturalActivity.setOrganizer(organizer);
+
         return culturalActivityRepository.save(culturalActivity);
     }
 
@@ -30,39 +50,37 @@ public class CulturalActivityServiceImpl implements CulturalActivityService {
         return culturalActivityRepository.findById(id);
     }
 
-    public List<CulturalActivity> getAllActivities(String tag) {
-        List<CulturalActivity> result = new ArrayList<>();
+    public List<CulturalActivityDTO> getAllActivities(String tag) {
+        List<CulturalActivityDTO> result = new ArrayList<>();
 
         List<fortcultural.arquitetura.model.entity.CulturalActivity> local = culturalActivityRepository.findAll();
         for (fortcultural.arquitetura.model.entity.CulturalActivity activity : local) {
-            result.add(CulturalActivity.fromDataBase(activity));
+            result.add(CulturalActivityDTO.fromDataBase(activity));
         }
 
-        List<OSMActivity> osm = osmIntegrationService.fetchCulturalActivitiesFromOSM(tag);
-        for (OSMActivity activity : osm) {
-            result.add(CulturalActivity.fromOSM(activity));
+        List<OSMActivityDTO> osm = osmIntegrationService.fetchCulturalActivitiesFromOSM(tag, BBOX);
+        for (OSMActivityDTO activity : osm) {
+            result.add(CulturalActivityDTO.fromOSM(activity));
         }
 
         return result;
     }
 
-
-    public List<CulturalActivity> getActivitiesFiltered(String categoryOrTag) {
-        List<CulturalActivity> result = new ArrayList<>();
+    public List<CulturalActivityDTO> getActivitiesFiltered(String categoryOrTag) {
+        List<CulturalActivityDTO> result = new ArrayList<>();
 
         List<fortcultural.arquitetura.model.entity.CulturalActivity> local = culturalActivityRepository.findByCategoryContainingIgnoreCase(categoryOrTag);
         for (fortcultural.arquitetura.model.entity.CulturalActivity activity : local) {
-            result.add(CulturalActivity.fromDataBase(activity));
+            result.add(CulturalActivityDTO.fromDataBase(activity));
         }
 
-        List<OSMActivity> osm = osmIntegrationService.fetchCulturalActivitiesFromOSM(categoryOrTag);
-        for (OSMActivity activity : osm) {
-            result.add(CulturalActivity.fromOSM(activity));
+        List<OSMActivityDTO> osm = osmIntegrationService.fetchCulturalActivitiesFromOSM(categoryOrTag, BBOX);
+        for (OSMActivityDTO activity : osm) {
+            result.add(CulturalActivityDTO.fromOSM(activity));
         }
 
         return result;
     }
-
 
     @Override
     public List<fortcultural.arquitetura.model.entity.CulturalActivity> listCulturalActivity() {
@@ -79,7 +97,7 @@ public class CulturalActivityServiceImpl implements CulturalActivityService {
             culturalActivity.setCategory(updatedActivity.getCategory());
             culturalActivity.setOrganizer(updatedActivity.getOrganizer());
             return culturalActivityRepository.save(culturalActivity);
-    }).orElseThrow(() -> new RuntimeException("Atividade cultura com ID " +  id + " não encontrado."));
+        }).orElseThrow(() -> new RuntimeException("Atividade cultura com ID " +  id + " não encontrado."));
     }
 
     @Override

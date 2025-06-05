@@ -4,7 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class RegisterRequest {
+public class RegisterRequestDTO {
     @NotBlank(message = "Nome é obrigatório")
     @Size(min = 2, max = 100, message = "Nome deve ter entre 2 e 100 caracteres")
     private String name;
@@ -17,17 +17,15 @@ public class RegisterRequest {
     @Size(min = 6, message = "Senha deve ter pelo menos 6 caracteres")
     private String password;
 
-    private String type = "USER"; // Valor padrão
+    private String type = "USER";
 
-
-    public RegisterRequest(String name, String email, String password, String type) {
+    public RegisterRequestDTO(String name, String email, String password, String type) {
         this.name = name;
         this.email = email;
         this.password = password;
         this.type = type;
     }
 
-    // Getters and Setters
     public String getName() {
         return name;
     }

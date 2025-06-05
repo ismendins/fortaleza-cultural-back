@@ -18,12 +18,12 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final String secretKey = "chave-secreta-muito-forte-para-jwt-nao-compartilhar";
+    private final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
     private final long expirationTime = 3600000;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
+        return secretKey;
     }
 
     public String generateToken(String username) {
